@@ -54,8 +54,8 @@ export default function Chat() {
         <div className="header-content">
           <div className="logo-icon">🛍️</div>
           <div>
-            <h1>Preferrrr</h1>
-            <p>Your personal "Bullshit Checker"</p>
+            <h1>Preferrrr GTM</h1>
+            <p>Competitor Intelligence Agent</p>
           </div>
         </div>
       </div>
@@ -64,16 +64,15 @@ export default function Chat() {
         {messages.length === 0 && (
           <div className="empty-state fade-in">
             <div className="welcome-card glass-panel">
-              <span className="welcome-emoji">👋</span>
-              <h2>Stop searching. Start knowing.</h2>
+              <span className="welcome-emoji">🕵️‍♂️</span>
+              <h2>Steal their customers.</h2>
               <p>
-                Paste any product link below, and I'll filter out the sponsored noise,
-                tell you what real customers think, and find you 3 better alternatives.
+                Drop a competitor's product link below. I'll use <strong>Apify</strong> to scrape their 1-star reviews, extract the exact reasons customers are frustrated, and generate 3 <strong>Pixero.ai</strong> optimized Meta Ad variants to intercept their buyers.
               </p>
             </div>
 
             <div className="suggestions-container">
-              <p className="suggestions-label">Trending right now</p>
+              <p className="suggestions-label">Test with real competitor data</p>
               <div className="suggestions-list">
                 {SUGGESTIONS.map((sugg, i) => (
                   <button
@@ -120,7 +119,7 @@ export default function Chat() {
                             <svg className="spinner" viewBox="0 0 50 50">
                               <circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle>
                             </svg>
-                            <span>Analyzing verified reviews...</span>
+                            <span>Crawling competitor via Apify Website Crawler...</span>
                           </div>
                         ) : part.state === 'output-available' ? (
                           <div className="tool-done">

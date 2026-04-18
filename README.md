@@ -58,14 +58,14 @@ An AI-powered multi-agent system that replaces the broken e-commerce experience 
 
 ## The Agentic Architecture
 
-Preferrrr is built on a **multi-agent orchestration layer** — a pipeline of specialized AI agents that each handle one critical stage of the decision-making process.
+Preferrrr GTM is built on a **multi-agent orchestration layer** — a pipeline of specialized AI agents that automates the entire competitor interception workflow.
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════╗
-║                        PREFERRRR — AGENTIC ARCHITECTURE                        ║
+║                        PREFERRRR GTM — AGENTIC ARCHITECTURE                      ║
 ╠══════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                ║
-║    USER                                                                        ║
+║    USER (Marketer)                                                             ║
 ║     │                                                                          ║
 ║     ▼                                                                          ║
 ║    ┌──────────────────────────────────────────────┐                             ║
@@ -74,76 +74,50 @@ Preferrrr is built on a **multi-agent orchestration layer** — a pipeline of sp
 ║                        │                                                       ║
 ║                        ▼                                                       ║
 ║    ┌──────────────────────────────────────────────┐                             ║
-║    │     🕵️ AGENT 1 — The Scraper                 │  ← Jina Reader API        ║
+║    │     🕵️ AGENT 1 — The Extraction Engine       │  ← Apify Website Crawler 🏆  ║
 ║    │                                              │                            ║
-║    │  • Receives product URL from user            │                            ║
-║    │  • Extracts live page content as markdown     │                            ║
-║    │  • Pulls reviews, specs, pricing, ratings     │                            ║
-║    │  • Bypasses anti-bot protections silently     │                            ║
+║    │  • Receives competitor URL from user         │                            ║
+║    │  • Bypasses anti-bot protections             │                            ║
+║    │  • Extracts deep page markdown unseen        │                            ║
 ║    └───────────────────┬──────────────────────────┘                             ║
 ║                        │  { raw markdown payload }                             ║
 ║                        ▼                                                       ║
 ║    ┌──────────────────────────────────────────────┐                             ║
-║    │     🧠 AGENT 2 — The Bullshit Checker        │  ← GPT-4o LLM            ║
+║    │     🧠 AGENT 2 — Market Intelligence       │  ← GPT-4o LLM              ║
 ║    │                                              │                            ║
-║    │  • Filters sponsored & fake reviews          │                            ║
-║    │  • Identifies authentic customer sentiment    │                            ║
-║    │  • Detects review manipulation patterns       │                            ║
-║    │  • Scores product on real-world merit         │                            ║
+║    │  • Scrapes away 5-star fake reviews          │                            ║
+║    │  • Identifies painful customer complaints    │                            ║
+║    │  • Synthesizes a frustrated ICP target       │                            ║
 ║    └───────────────────┬──────────────────────────┘                             ║
-║                        │  { sentiment analysis }                               ║
+║                        │  { ICP & Flaw Analysis }                              ║
 ║                        ▼                                                       ║
 ║    ┌──────────────────────────────────────────────┐                             ║
-║    │     🔍 AGENT 3 — Market Intelligence         │  ← Knowledge + Search     ║
+║    │     🔥 AGENT 3 — Campaign Generator          │  ← Pixero.ai Ready 🏆      ║
 ║    │                                              │                            ║
-║    │  • Searches for 3 better alternatives        │                            ║
-║    │  • Scores alternatives against original       │                            ║
-║    │  • Explains *why* each is better              │                            ║
-║    │  • Returns actionable, buyable results        │                            ║
+║    │  • Drafts 3 high-converting Meta Ads         │                            ║
+║    │  • Targets the exact competitor flaws        │                            ║
+║    │  • Writes Pixero image generation prompts    │                            ║
 ║    └───────────────────┬──────────────────────────┘                             ║
 ║                        │                                                       ║
 ║                        ▼                                                       ║
 ║    ┌──────────────────────────────────────────────┐                             ║
-║    │     📊 FINAL OUTPUT — Delivered to Chat      │  ← Streamed in real-time  ║
-║    │                                              │                            ║
-║    │  ✅ Honest sentiment summary                  │                            ║
-║    │  ✅ Pros & cons from real users               │                            ║
-║    │  ✅ 3 ranked alternatives with reasoning      │                            ║
+║    │     📊 FINAL CAMPAIGN — Delivered to Chat    │  ← Streamed in real-time  ║
 ║    └──────────────────────────────────────────────┘                             ║
 ║                                                                                ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-### Why Multi-Agent?
-
-A single monolithic prompt cannot reliably **scrape**, **analyze**, and **recommend** in one pass. Our architecture decomposes the problem:
-
-| Agent | Responsibility | Why It's Separate |
-|-------|---------------|-------------------|
-| **Agent 1 — Scraper** | Real-time data extraction | Needs raw I/O access to external URLs via tool-use |
-| **Agent 2 — Analyst** | Review authenticity scoring | Requires deep reasoning over unstructured text |
-| **Agent 3 — Recommender** | Market intelligence | Needs broad product knowledge + comparison logic |
-
-Each agent is orchestrated through the **Vercel AI SDK's tool-calling pipeline** with multi-step execution, allowing the LLM to autonomously decide when to invoke each capability.
-
 ---
 
-## Core Agents, Explained
+## 🏆 Hackathon Sponsor Integrations
 
-### 🕵️ Agent 1 — The Scraper
+We specifically engineered the codebase to utilize key sponsor technologies:
 
-Agent 1 is a zero-config web extraction engine powered by [Jina Reader](https://jina.ai/reader/). When a user pastes a product link, this agent silently converts the entire page into clean, structured markdown — reviews, specs, pricing, everything.
+### 1. Best use of Apify ($500)
+**How we use it:** Agent 1 natively integrates the **Apify Website Content Crawler (`apify/website-content-crawler`) API**. When a marketer drops a competitor's link, the Apify client spins up, bypasses bot detection, extracts the raw markdown format (optimally structured for LLMs), and returns it directly into our Vercel AI SDK pipeline.
 
-```
-User pastes: https://www.gymshark.com/products/arrival-5-shorts
-
-Agent 1 fires:
-  → r.jina.ai/https://www.gymshark.com/products/arrival-5-shorts
-  → Extracts 12,000 chars of structured product data
-  → Passes payload to Agent 2
-```
-
-**Supports:** Gymshark, Allbirds, Target, Best Buy, Shopify stores, and most major retailers.
+### 2. Best Organic Social Media Automation (Pixero.ai - $500)
+**How we use it:** Agent 3 acts as a full-stack media buyer. It generates 3 precise Meta Ad copy variants *and* outputs exact, structured visual prompts designed to be fed straight into **Pixero.ai** to autonomously generate the creative assets.
 
 ---
 
