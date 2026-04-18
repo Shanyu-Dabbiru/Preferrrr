@@ -3,7 +3,24 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { ChatMessage } from './api/chat/route';
+
+const SUGGESTIONS = [
+  {
+    title: 'Gymshark Arrival 5" Shorts',
+    url: 'https://www.gymshark.com/products/gymshark-arrival-5-shorts-black-ss22',
+  },
+  {
+    title: 'Allbirds Tree Dashers',
+    url: 'https://www.allbirds.com/products/mens-tree-dashers',
+  },
+  {
+    title: 'Sony WH-1000XM5',
+    url: 'https://electronics.sony.com/audio/headphones/headband/p/wh1000xm5-b',
+  },
+];
 
 export default function Chat() {
   const [input, setInput] = useState('');
@@ -20,105 +37,122 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!input.trim() || isLoading) return;
     sendMessage({ text: input });
     setInput('');
   };
 
+  const handleSuggestionClick = (url: string) => {
+    sendMessage({ text: url });
+  };
+
   return (
     <div className="app-container">
-      <div className="header">
-        <h1>Your personal shopper</h1>
-        <p>I know your taste. Let me find what you&apos;ll love next.</p>
+      <div className="header glass-panel">
+        <div className="header-content">
+          <div className="logo-icon">🛍️</div>
+          <div>
+            <h1>Preferrrr</h1>
+            <p>Your personal "Bullshit Checker"</p>
+          </div>
+        </div>
       </div>
 
       <div className="chat-messages">
         {messages.length === 0 && (
-          <div className="message bot">
-            <p>
-              Hey there! 👋 Share a link to a product (like Gymshark or
-              Allbirds) and I&apos;ll check out the real reviews for you, filter
-              the sponsored fluff, and give you the real deal + some
-              alternatives.
-            </p>
+          <div className="empty-state fade-in">
+            <div className="welcome-card glass-panel">
+              <span className="welcome-emoji">👋</span>
+              <h2>Stop searching. Start knowing.</h2>
+              <p>
+                Paste any product link below, and I'll filter out the sponsored noise,
+                tell you what real customers think, and find you 3 better alternatives.
+              </p>
+            </div>
+
+            <div className="suggestions-container">
+              <p className="suggestions-label">Trending right now</p>
+              <div className="suggestions-list">
+                {SUGGESTIONS.map((sugg, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSuggestionClick(sugg.url)}
+                    className="suggestion-pill"
+                    disabled={isLoading}
+                  >
+                    <span className="pill-icon">🔥</span>
+                    {sugg.title}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`message ${message.role === 'user' ? 'user' : 'bot'}`}
+            className={`message-wrapper ${message.role === 'user' ? 'user-wrapper' : 'bot-wrapper'}`}
           >
-            {message.parts.map((part, i) => {
-              switch (part.type) {
-                case 'text':
-                  return (
-                    <div key={`${message.id}-text-${i}`} className="text-part">
-                      {part.text.split('\n').map((line, li) => {
-                        // Basic markdown-lite rendering
-                        if (line.startsWith('### '))
-                          return (
-                            <h3 key={li}>{line.replace('### ', '')}</h3>
-                          );
-                        if (line.startsWith('## '))
-                          return (
-                            <h2 key={li}>{line.replace('## ', '')}</h2>
-                          );
-                        if (line.startsWith('# '))
-                          return (
-                            <h1 key={li}>{line.replace('# ', '')}</h1>
-                          );
-                        if (line.startsWith('- '))
-                          return <li key={li}>{line.replace('- ', '')}</li>;
-                        if (line.startsWith('**') && line.endsWith('**'))
-                          return (
-                            <strong key={li}>
-                              {line.replace(/\*\*/g, '')}
-                            </strong>
-                          );
-                        if (line.trim() === '') return <br key={li} />;
-                        return <p key={li}>{line}</p>;
-                      })}
-                    </div>
-                  );
+            {message.role === 'assistant' && (
+              <div className="avatar bot-avatar">🤖</div>
+            )}
+            
+            <div className={`message ${message.role === 'user' ? 'user-msg' : 'bot-msg glass-panel'}`}>
+              {message.parts.map((part, i) => {
+                switch (part.type) {
+                  case 'text':
+                    return (
+                      <div key={`${message.id}-text-${i}`} className="markdown-content">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {part.text}
+                        </ReactMarkdown>
+                      </div>
+                    );
 
-                case 'tool-scrape_product_url':
-                  return (
-                    <div key={`${message.id}-tool-${i}`} className="tool-status">
-                      {part.state === 'input-streaming' || part.state === 'input-available' ? (
-                        <div className="tool-loading">
-                          <div className="loading-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
+                  case 'tool-scrape_product_url':
+                    return (
+                      <div key={`${message.id}-tool-${i}`} className="tool-status">
+                        {part.state === 'input-streaming' || part.state === 'input-available' ? (
+                          <div className="tool-loading">
+                            <svg className="spinner" viewBox="0 0 50 50">
+                              <circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle>
+                            </svg>
+                            <span>Analyzing verified reviews...</span>
                           </div>
-                          <span>Scraping product page &amp; reviews...</span>
-                        </div>
-                      ) : part.state === 'output-available' ? (
-                        <div className="tool-done">✅ Product data retrieved</div>
-                      ) : part.state === 'output-error' ? (
-                        <div className="tool-error">
-                          ⚠️ Couldn&apos;t scrape that page. Analyzing from general knowledge...
-                        </div>
-                      ) : null}
-                    </div>
-                  );
+                        ) : part.state === 'output-available' ? (
+                          <div className="tool-done">
+                            <span>✅ Real sentiment extracted</span>
+                          </div>
+                        ) : part.state === 'output-error' ? (
+                          <div className="tool-error">
+                            <span>⚠️ Using market knowledge (site blocked scraper)</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
 
-                default:
-                  return null;
-              }
-            })}
+                  default:
+                    return null;
+                }
+              })}
+            </div>
+
+            {message.role === 'user' && (
+              <div className="avatar user-avatar">👤</div>
+            )}
           </div>
         ))}
 
-        {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div className="message bot loading">
-            <div className="loading-dots">
-              <span></span>
-              <span></span>
-              <span></span>
+        {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
+          <div className="message-wrapper bot-wrapper fade-in">
+            <div className="avatar bot-avatar">🤖</div>
+            <div className="message bot-msg glass-panel typing-indicator-container">
+              <div className="typing-indicator">
+                <span></span><span></span><span></span>
+              </div>
             </div>
           </div>
         )}
@@ -130,29 +164,22 @@ export default function Chat() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Share a product link..."
+            placeholder="Drop a product link or ask for recommendations..."
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
             className="send-btn"
+            aria-label="Send"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
           </button>
         </form>
+        <p className="footer-text">Preferrrr evaluates millions of reviews to find what you actually need.</p>
       </div>
     </div>
   );
